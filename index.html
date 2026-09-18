@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রিপেইড মিটার রসিদ ও টোকেন জেনারেটর (58mm Thermal)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #f4f7f6;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .btn-main {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-main:hover {
+            background-color: #218838;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .btn-copy { background-color: #007bff; }
+        .btn-copy:hover { background-color: #0056b3; }
+        .btn-print { background-color: #17a2b8; }
+        .btn-print:hover { background-color: #138496; }
+
+        .result-container {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .section-title {
+            background: #e9ecef;
+            padding: 6px 10px;
+            border-left: 4px solid #007bff;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table, th, td {
+            border: 1px solid #dee2e6;
+        }
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f8f9fa;
+            width: 45%;
+            color: #495057;
+        }
+        td {
+            color: #212529;
+            font-weight: 500;
+        }
+
+        ol {
+            padding-left: 20px;
+            line-height: 1.8;
+            font-size: 15px;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+        ol li {
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        /* গুরুত্বপূর্ণ হটলাইন তথ্য বক্সের স্টাইল */
+        .info-card {
+            margin-top: 20px;
+            padding: 12px 15px;
+            background-color: #e8f4fd;
+            border: 1px solid #b6e0fe;
+            border-left: 5px solid #0d6efd;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .info-card .info-text {
+            font-size: 15px;
+            color: #084298;
+            font-weight: 500;
+        }
+        .info-card .hotline-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d9534f;
+            background: #ffffff;
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: 1px solid #ffcdd2;
+        }
+
+        /* ফুটার / ব্র্যান্ডিং স্টাইল */
+        .footer-branding {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* ভিজিটর কাউন্টার বক্স স্টাইল */
+        .visitor-counter-box {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .visitor-counter-box span {
+            font-size: 14px;
+            color: #555;
+            font-weight: bold;
+        }
+        .visitor-count-number {
+            font-size: 18px;
+            color: #d9534f;
+            font-weight: bold;
+            background: #fff3f3;
+            padding: 2px 10px;
+            border-radius: 4px;
+            border: 1px solid #ffcdd2;
+            margin-left: 5px;
+        }
+
+        /* --------------------------------------------------------
+           ৫৮ মিমি থার্মাল প্রিন্টারের জন্য বিশেষ CSS (Print Setup)
+        ----------------------------------------------------------- */
+        @media print {
+            @page {
+                size: 58mm auto; /* ৫৮মিমি থার্মাল পেপারের মাপ */
+                margin: 0;
+            }
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 2mm;
+                width: 54mm; /* প্রিন্ট এলাকা */
+                font-family: 'Courier New', Courier, monospace, Arial;
+                color: #000;
+            }
+            /* প্রিন্ট করার সময় যেসব জিনিস বন্ধ থাকবে (হটলাইন ও কাউন্টারসহ) */
+            textarea, .btn-main, .action-buttons, p, h2, .visitor-counter-box, .info-card {
+                display: none !important;
+            }
+            .result-container {
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+            .section-title {
+                background: none;
+                border-left: none;
+                border-bottom: 1px dashed #000;
+                padding: 2px 0;
+                margin-top: 10px;
+                margin-bottom: 5px;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+            table {
+                width: 100%;
+                border: none;
+            }
+            table, th, td {
+                border: none;
+            }
+            th, td {
+                padding: 2px 0;
+                font-size: 11px;
+                word-break: break-all;
+            }
+            th {
+                width: 50%;
+                font-weight: bold;
+            }
+            ol {
+                padding-left: 15px;
+                font-size: 12px;
+            }
+            ol li {
+                font-size: 12px;
+                font-weight: bold;
+                word-break: break-all;
+                margin-bottom: 4px;
+            }
+
+            /* প্রিন্ট কাগজের শেষে ফুটার মেসেজ */
+            .footer-branding {
+                border-top: 1px dashed #000;
+                margin-top: 15px;
+                padding-top: 5px;
+                font-size: 11px;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>প্রিপেইড মিটার রসিদ ও থার্মাল প্রিন্টার জেনারেটর</h2>
+    <p>নিচে আপনার রসিদ বা মেসেজের টেক্সট পেস্ট করুন:</p>
+    
+    <textarea id="inputText" placeholder="এখানে সম্পূর্ণ মেসেজ বা রসিদের টেক্সট পেস্ট করুন..."></textarea>
+    <button class="btn-main" onclick="processReceipt()">সবগুলো তথ্য সাজিয়ে দেখুন</button>
+
+    <div class="result-container" id="resultBox" style="display:none;">
+        <div class="action-buttons">
+            <button class="btn-action btn-copy" onclick="copyAllDetails()">সব তথ্য কপি করুন</button>
+            <button class="btn-action btn-print" onclick="window.print()">৫৮মিমি প্রিন্ট করুন</button>
+        </div>
+
+        <!-- ১. রসিদের বিস্তারিত বিবরণ (উপরে) -->
+        <div class="section-title">রসিদের বিস্তারিত বিবরণ</div>
+        <table>
+            <tbody id="detailsTableBody">
+                <!-- JavaScript দিয়ে তথ্য এখানে যুক্ত হবে -->
+            </tbody>
+        </table>
+
+        <!-- ২. টোকেন নম্বর তালিকা (নিচে) -->
+        <div class="section-title">টোকেন নম্বর তালিকা (সিরিয়াল অনুযায়ী)</div>
+        <ol id="tokenList"></ol>
+
+        <!-- ৩. ফুটার (Developed By Babur) -->
+        <div class="footer-branding">
+            Developed By Babur
+        </div>
+    </div>
+
+    <!-- ৪. হটলাইন তথ্য সেকশন (শুধু স্ক্রিনে দেখাবে, প্রিন্ট হবে না) -->
+    <div class="info-card">
+        <span class="info-text">📞 যেকোনো সমস্যায় হটলাইন নম্বরে যোগাযোগ করুন:</span>
+        <span class="hotline-number">১৬২০০</span>
+    </div>
+
+    <!-- ৫. ভিজিটর কাউন্টার সেকশন (শুধু স্ক্রিনে দেখাবে, প্রিন্ট হবে না) -->
+    <div class="visitor-counter-box">
+        <span>👁️ মোট ভিজিটর:</span>
+        <span class="visitor-count-number" id="visitorCount">লোড হচ্ছে...</span>
+    </div>
+
+    <script>
+        let fullFormattedCopy = "";
+
+        // ভিজিটর কাউন্টার লোড করার ফাংশন
+        function loadVisitorCount() {
+            fetch('https://countapi.mileshilliard.com/api/v1/hit/babur_prepaid_receipt_tool_counter')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.value) {
+                        document.getElementById('visitorCount').innerText = data.value;
+                    } else {
+                        document.getElementById('visitorCount').innerText = "1";
+                    }
+                })
+                .catch(error => {
+                    let localCount = localStorage.getItem("babur_visitor_count") || 0;
+                    localCount = parseInt(localCount) + 1;
+                    localStorage.setItem("babur_visitor_count", localCount);
+                    document.getElementById('visitorCount').innerText = localCount;
+                });
+        }
+
+        window.onload = loadVisitorCount;
+
+        function processReceipt() {
+            let text = document.getElementById('inputText').value;
+            let listContainer = document.getElementById('tokenList');
+            let tableBody = document.getElementById('detailsTableBody');
+            let resultBox = document.getElementById('resultBox');
+
+            // ১. ২০ ডিজিটের টোকেন ফিল্টার করা
+            let tokenPattern = /\b\d{4}-\d{4}-\d{4}-\d{4}-\d{4}\b/g;
+            let tokens = text.match(tokenPattern) || [];
+
+            // ২. মেসেজ থেকে বিভিন্ন ফিল্ড এক্সট্র্যাক্ট করা
+            let dateMatch = text.match(/(?:Date)[:\s]*([\d\-\/\.\s]+)/i);
+            let meterMatch = text.match(/(?:Meter No|Meter|MeterNo)[:\.\s]*(\d+)/i);
+            let seqMatch = text.match(/(?:SquNo|Sequence|SqNo)[:\s]*([0-9~\-]+)/i);
+            let vendingAmtMatch = text.match(/(?:Vending Amt)[:\s]*([\d\.]+)/i);
+            let grossAmtMatch = text.match(/(?:Gross Amount)[:\s]*([\d\.]+)/i);
+            let enrgCostMatch = text.match(/(?:Enrg Cost|Energy Cost)[:\s]*([\d\.]+)/i);
+            let totalChargeMatch = text.match(/(?:Total Charge)[:\s]*([\d\.]+)/i);
+            let meterRentMatch = text.match(/(?:Meter Rent 3P|Meter Rent)[:\s]*([\d\.]+)/i);
+            let demandChargeMatch = text.match(/(?:Demand Charge)[:\s]*([\d\.]+)/i);
+            let vatMatch = text.match(/(?:VAT)[:\s]*([\d\.]+)/i);
+            let rebateMatch = text.match(/(?:Rebate)[:\s]*([\-\d\.]+)/i);
+
+            // তথ্য সাজানো
+            let details = [];
+
+            if (dateMatch) details.push({ label: "তারিখ (Date)", value: dateMatch[1].trim() });
+            if (meterMatch) details.push({ label: "মিটার নম্বর", value: meterMatch[1].trim() });
+            if (seqMatch) details.push({ label: "সিকোয়েন্স", value: seqMatch[1].trim() });
+            if (vendingAmtMatch) details.push({ label: "ভেন্ডিং অ্যামাউন্ট", value: vendingAmtMatch[1].trim() + " TK" });
+            if (grossAmtMatch) details.push({ label: "মোট টাকা", value: grossAmtMatch[1].trim() + " TK" });
+            if (enrgCostMatch) details.push({ label: "এনার্জি কস্ট", value: enrgCostMatch[1].trim() + " TK" });
+            if (totalChargeMatch) details.push({ label: "টোটাল চার্জ", value: totalChargeMatch[1].trim() + " TK" });
+            if (meterRentMatch) details.push({ label: "মিটার রেন্ট", value: meterRentMatch[1].trim() + " TK" });
+            if (demandChargeMatch) details.push({ label: "ডিমান্ড চার্জ", value: demandChargeMatch[1].trim() + " TK" });
+            if (vatMatch) details.push({ label: "ভ্যাট (VAT)", value: vatMatch[1].trim() + " TK" });
+            if (rebateMatch) details.push({ label: "রিবেট (Rebate)", value: rebateMatch[1].trim() + " TK" });
+
+            // UI রিসেট
+            listContainer.innerHTML = '';
+            tableBody.innerHTML = '';
+            fullFormattedCopy = "";
+
+            // বিস্তারিত বিবরণ রেন্ডার (উপরে)
+            if (details.length > 0) {
+                fullFormattedCopy += "### রসিদের বিস্তারিত বিবরণ:\n\n";
+                details.forEach(item => {
+                    let tr = document.createElement('tr');
+                    tr.innerHTML = `<th>${item.label}:</th><td>${item.value}</td>`;
+                    tableBody.appendChild(tr);
+                    fullFormattedCopy += `* **${item.label}:** ${item.value}\n`;
+                });
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="2">কোনো বিস্তারিত বিবরণ পাওয়া যায়নি</td></tr>';
+            }
+
+            // টোকেন রেন্ডার (নিচে)
+            if (tokens.length > 0) {
+                fullFormattedCopy += "\n---\n\n### টোকেন নম্বর তালিকা (সিরিয়াল অনুযায়ী):\n\n";
+                tokens.forEach((token, idx) => {
+                    let li = document.createElement('li');
+                    li.textContent = token;
+                    listContainer.appendChild(li);
+                    fullFormattedCopy += `${idx + 1}. ${token}\n`;
+                });
+            } else {
+                listContainer.innerHTML = '<li>কোনো টোকেন নম্বর পাওয়া যায়নি</li>';
+            }
+
+            fullFormattedCopy += "\n---\nDeveloped By Babur";
+
+            resultBox.style.display = 'block';
+        }
+
+        // সব তথ্য কপি করার ফাংশন
+        function copyAllDetails() {
+            if (fullFormattedCopy) {
+                navigator.clipboard.writeText(fullFormattedCopy).then(() => {
+                    alert('রসিদের বিস্তারিত বিবরণ এবং টোকেন তালিকা সফলভাবে কপি করা হয়েছে!');
+                });
+            } else {
+                alert('কপি করার মতো কোনো তথ্য নেই!');
+            }
+        }
+    </script>
+
+</body>
+</html>
