@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রিপেইড মিটার টোকেন এক্সট্রাক্টর ও সর্টার</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #f4f7f6;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 10px;
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .btn-main {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-main:hover {
+            background-color: #218838;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .btn-copy { background-color: #007bff; }
+        .btn-copy:hover { background-color: #0056b3; }
+        .btn-print { background-color: #17a2b8; }
+        .btn-print:hover { background-color: #138496; }
+
+        .result-container {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        ol {
+            padding-left: 25px;
+            line-height: 1.8;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* প্রিন্ট করার জন্য বিশেষ CSS */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            textarea, .btn-main, .action-buttons, p, h2 {
+                display: none !important;
+            }
+            .result-container {
+                border: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>প্রিপেইড মিটার টোকেন এক্সট্রাক্টর</h2>
+    <p>নিচে আপনার এসএমএস (SMS) বা মেসেজের পুরো টেক্সট পেস্ট করুন:</p>
+    
+    <textarea id="inputText" placeholder="এখানে সম্পূর্ণ মেসেজ বা টোকেন নাম্বার পেস্ট করুন..."></textarea>
+    <button class="btn-main" onclick="extractAndGenerateSerial()">টোকেন আলাদা করুন ও সিরিয়াল বানান</button>
+
+    <div class="result-container" id="resultBox" style="display:none;">
+        <div class="action-buttons">
+            <button class="btn-action btn-copy" onclick="copyTokens()">সব কপি করুন</button>
+            <button class="btn-action btn-print" onclick="printPage()">প্রিন্ট করুন</button>
+        </div>
+        
+        <h3>সাজানো টোকেন নম্বরসমূহ:</h3>
+        <ol id="tokenList"></ol>
+    </div>
+
+    <script>
+        let formattedTextForCopy = "";
+
+        function extractAndGenerateSerial() {
+            let input = document.getElementById('inputText').value;
+            let listContainer = document.getElementById('tokenList');
+            let resultBox = document.getElementById('resultBox');
+
+            // ২০ ডিজিটের টোকেন ফিল্টার করার Regular Expression Pattern
+            // এটি XXXX-XXXX-XXXX-XXXX-XXXX ফরম্যাটের টোকেন খুঁজে বের করে
+            let tokenPattern = /\b\d{4}-\d{4}-\d{4}-\d{4}-\d{4}\b/g;
+            
+            // টেক্সট থেকে সব টোকেন ফিল্টার করা
+            let foundTokens = input.match(tokenPattern);
+
+            listContainer.innerHTML = ''; 
+            formattedTextForCopy = ""; 
+
+            if (foundTokens && foundTokens.length > 0) {
+                foundTokens.forEach(function(token, index) {
+                    let li = document.createElement('li');
+                    li.textContent = token;
+                    listContainer.appendChild(li);
+
+                    // কপি করার জন্য সিরিয়ালসহ ফরম্যাট
+                    formattedTextForCopy += `${index + 1}. ${token}\n`;
+                });
+
+                resultBox.style.display = 'block';
+            } else {
+                alert('কোনো ২০ ডিজিটের টোকেন নম্বর খুঁজে পাওয়া যায়নি! সঠিক মেসেজ ইনপুট দিন।');
+                resultBox.style.display = 'none';
+            }
+        }
+
+        // কপি করার ফানশন
+        function copyTokens() {
+            if (formattedTextForCopy) {
+                navigator.clipboard.writeText(formattedTextForCopy).then(function() {
+                    alert('সবগুলো টোকেন নম্বর সফলভাবে কপি হয়েছে!');
+                }).catch(function(err) {
+                    alert('কপি করতে সমস্যা হয়েছে: ' + err);
+                });
+            }
+        }
+
+        // প্রিন্ট করার ফানশন
+        function printPage() {
+            window.print();
+        }
+    </script>
+
+</body>
+</html>
